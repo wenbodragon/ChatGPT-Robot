@@ -12,6 +12,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "openai": "^3.2.1",
     "pinia": "^2.0.32",
     "vant": "^4.1.2",
     "vue": "^3.2.47",
@@ -19,7 +20,7 @@
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",
-    "@types/node": "^18.14.2",
+    "@types/node": "^18.15.11",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/eslint-config-prettier": "^7.1.0",
     "@vue/eslint-config-typescript": "^11.0.2",

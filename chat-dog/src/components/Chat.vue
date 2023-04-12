@@ -1,8 +1,10 @@
 <script setup lang="ts">
-function chat() {
+import { callOpenAi } from "../service/openai"
+function chatFun() {
+    callOpenAi();
 }
 </script>
 
 <template>
-<van-button plain type="primary" @click="chat">chat</van-button>
+<van-button plain type="primary" @click="chatFun">chat</van-button>
 </template>
