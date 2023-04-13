@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import Chat from './components/Chat.vue'
+import ChatView from './components/ChatView.vue'
 </script>
 
 <template>
   <header>
     <div class="wrapper">
-      <Chat />
+      <ChatView />
     </div>
   </header>
 
@@ -14,4 +14,12 @@ import Chat from './components/Chat.vue'
 </template>
 
 <style scoped>
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: antiquewhite;
+}
 </style>
