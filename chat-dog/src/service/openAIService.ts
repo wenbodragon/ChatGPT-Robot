@@ -1,7 +1,8 @@
 import { Configuration, OpenAIApi } from 'openai'
+
 export async function callOpenAi(content: string): Promise<string> {
   const configuration = new Configuration({
-    apiKey: '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'
+    apiKey: import.meta.env.VITE_OPENAI_KEY
   })
   const openai = new OpenAIApi(configuration)
 
