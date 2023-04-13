@@ -12,7 +12,7 @@ async function chatFun() {
 <template>
   <van-field v-model="response" rows="1" type="textarea" autosize />
   <van-field v-model="question" rows="1" type="textarea" autosize placeholder="Ask dog a question" />
-  <van-button plain type="primary" @click="chatFun">chat</van-button>
+  <van-button plain type="primary" @click="chatFun">let's chat</van-button>
 </template>
 
 <style scoped>
