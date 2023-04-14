@@ -1,9 +1,9 @@
 import { Configuration, OpenAIApi } from 'openai'
-
-export async function callOpenAi(content: string): Promise<string> {
+export async function callOpenAi(content: string) {
   const configuration = new Configuration({
-    apiKey: import.meta.env.VITE_OPENAI_KEY
+    apiKey: import.meta.env.VITE_APP_KEY,
   })
+
   const openai = new OpenAIApi(configuration)
 
   const completion = await openai.createChatCompletion({
