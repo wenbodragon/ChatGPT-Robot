@@ -47,7 +47,7 @@ async function chatFun() {
 }
 
 .input {
-  flex: 3; /* 等分剩余空间 */
+  flex: 8; /* 等分剩余空间 */
 }
 .btn {
   display: flex;

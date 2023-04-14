@@ -7,13 +7,13 @@ const router = createRouter({
       path: '/',
       name: '',
       //@ts-ignore
-      component: () => import('../views/chatRoom/chatRoom.vue')
+      component: () => import('../views/chatRoom/ChatRoom.vue')
     },
     {
       path: '/chatroom',
       name: '',
       //@ts-ignore
-      component: () => import('../views/chatRoom/chatRoom.vue')
+      component: () => import('../views/chatRoom/ChatRoom.vue')
     }
   ]
 })
