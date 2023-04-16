@@ -5,11 +5,37 @@ import { callOpenAi } from '@/service/openAIService'
 const question = ref('')
 const response = ref('')
 const isLoading = ref(false)
-
 async function chatFun() {
-  isLoading.value = true
-  response.value = await callOpenAi(question.value)
-  isLoading.value = false
+  // isLoading.value = true
+  await callOpenAi(question.value).then(res => {
+    //@ts-ignore
+    const reader = res.body.getReader();
+    // console.log(reader);
+    readStream(reader);
+  })
+}
+function readStream(reader:any){
+    //@ts-ignore
+    reader.read().then(({ done, value }) => {
+      if(done){
+        return
+      }
+      let decoded = new TextDecoder().decode(value);
+      let decodedArray = decoded.split("data: ");
+      decodedArray.forEach(decoded => {
+            if(decoded!==""){
+              if(decoded.trim()==="[DONE]"){
+                return;
+              }else{
+                const resString = JSON.parse(decoded).choices[0].delta.content ? 
+                JSON.parse(decoded).choices[0].delta.content : "";
+                response.value += resString
+              }
+            }
+          })
+      console.log(decoded);
+      return readStream(reader)
+  })
 }
 </script>
 

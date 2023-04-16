@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite --mode=dev",
+    "dev": "vite --mode=dev --open",
     "build": "run-p type-check build-only --mode=prod",
     "preview": "vite preview",
     "build-only": "vite build",
