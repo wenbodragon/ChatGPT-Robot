@@ -25,7 +25,7 @@
 //   const xhr = new XMLHttpRequest();
 //   xhr.open("POST","https://api.openai.com/v1/chat/completions");
 //   // xhr.setRequestHeader('Content-Type', 'stream');
-//   xhr.setRequestHeader('Authorization', `Bearer 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`);
+//   xhr.setRequestHeader('Authorization', `Bearer sda`);
 
 //   xhr.send(JSON.stringify({"model": "gpt-3.5-turbo","stream":true,
 //   "messages": [{"role": "user", "content": content}]}));
