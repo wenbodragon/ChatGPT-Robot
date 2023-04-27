@@ -71,7 +71,7 @@ function readStream(reader:any){
 import type { Ref } from 'vue'
 import { ref } from 'vue'
 import { callOpenAi } from '@/service/openAIService'
-// import { NavBar, NoticeBar, Field } from 'vant';
+import { NavBar, NoticeBar, Field } from 'vant'
 
 interface Message {
   content: string
@@ -80,7 +80,6 @@ interface Message {
   isNewDay: boolean
 }
 
-const response = ref('')
 
 const messages: Ref<Message[]> = ref([
   {
@@ -103,8 +102,9 @@ const messages: Ref<Message[]> = ref([
   }
 ])
 
-const newMessage: Ref<string> = ref('')
-const maxMessageLength: number = 100
+const newMessage: Ref<string> = ref('');
+const maxMessageLength: number = 100;
+const responseMessage: Ref<string> = ref('');
 
 function onBackClick(): void {
   // 返回上一页代码...
@@ -113,7 +113,7 @@ function onBackClick(): void {
 function sendMessage(): void {
   // 发送消息代码...
   if (newMessage.value.trim() === '') {
-    return;
+    return
   }
   messages.value.push({
     content: newMessage.value,
@@ -121,6 +121,7 @@ function sendMessage(): void {
     time: new Date().toLocaleString(),
     isNewDay: false
   })
+  chatFun();
 }
 
 function onInputBlur(): void {
@@ -139,34 +140,41 @@ function formatTime(timeStr: string): string {
 
 async function chatFun() {
   // isLoading.value = true
-  await callOpenAi(newMessage.value).then(res => {
+  await callOpenAi(newMessage.value).then((res) => {
     //@ts-ignore
     const reader = res.body.getReader();
     // console.log(reader);
     readStream(reader);
+    messages.value.push({
+    content: responseMessage.value,
+    sender: 'other',
+    time: new Date().toLocaleString(),
+    isNewDay: false
+  })
   })
 }
-function readStream(reader:any){
-    //@ts-ignore
-    reader.read().then(({ done, value }) => {
-      if(done){
-        return
+function readStream(reader: any) {
+  //@ts-ignore
+  reader.read().then(({ done, value }) => {
+    if (done) {
+      return
+    }
+    let decoded = new TextDecoder().decode(value)
+    let decodedArray = decoded.split('data: ')
+    decodedArray.forEach((decoded) => {
+      if (decoded !== '') {
+        if (decoded.trim() === '[DONE]') {
+          return
+        } else {
+          const resString = JSON.parse(decoded).choices[0].delta.content
+            ? JSON.parse(decoded).choices[0].delta.content
+            : ''
+            responseMessage.value += resString;
+        }
       }
-      let decoded = new TextDecoder().decode(value);
-      let decodedArray = decoded.split("data: ");
-      decodedArray.forEach(decoded => {
-            if(decoded!==""){
-              if(decoded.trim()==="[DONE]"){
-                return;
-              }else{
-                const resString = JSON.parse(decoded).choices[0].delta.content ? 
-                JSON.parse(decoded).choices[0].delta.content : "";
-                response.value += resString
-              }
-            }
-          })
-      console.log(decoded);
-      return readStream(reader)
+    })
+    console.log(decoded)
+    return readStream(reader)
   })
 }
 </script>
