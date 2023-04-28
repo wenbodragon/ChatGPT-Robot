@@ -1,44 +1,3 @@
-<!-- <script setup lang="ts">
-import { ref } from 'vue'
-import { callOpenAi } from '@/service/openAIService'
-
-const question = ref('')
-const response = ref('')
-const isLoading = ref(false)
-async function chatFun() {
-  // isLoading.value = true
-  await callOpenAi(question.value).then(res => {
-    //@ts-ignore
-    const reader = res.body.getReader();
-    // console.log(reader);
-    readStream(reader);
-  })
-}
-function readStream(reader:any){
-    //@ts-ignore
-    reader.read().then(({ done, value }) => {
-      if(done){
-        return
-      }
-      let decoded = new TextDecoder().decode(value);
-      let decodedArray = decoded.split("data: ");
-      decodedArray.forEach(decoded => {
-            if(decoded!==""){
-              if(decoded.trim()==="[DONE]"){
-                return;
-              }else{
-                const resString = JSON.parse(decoded).choices[0].delta.content ? 
-                JSON.parse(decoded).choices[0].delta.content : "";
-                response.value += resString
-              }
-            }
-          })
-      console.log(decoded);
-      return readStream(reader)
-  })
-}
-</script>
- -->
 <template>
   <div class="chat-window">
     <nav-bar title="聊天窗口" left-text="返回" left-arrow @click-left="onBackClick" />
@@ -55,15 +14,19 @@ function readStream(reader:any){
         </div>
       </div>
     </div>
-    <field
-      v-model="newMessage"
-      placeholder="请输入消息"
-      clearable
-      @blur="onInputBlur"
-      :autofocus="false"
-      :maxlength="maxMessageLength"
-    />
-    <button class="send-btn" @click="sendMessage">发送</button>
+    <div class="chat-bottom">
+      <van-cell-group class="chat-field" inset>
+        <van-field
+          v-model="newMessage"
+          @blur="onInputBlur"
+          rows="1"
+          autosize
+          type="textarea"
+          placeholder="请输入留言"
+        />
+      </van-cell-group>
+      <van-button type="success" class="send-btn" @click="sendMessage">发送</van-button>
+    </div>
   </div>
 </template>
 
@@ -72,56 +35,53 @@ import type { Ref } from 'vue'
 import { ref } from 'vue'
 import { callOpenAi } from '@/service/openAIService'
 import { NavBar, NoticeBar, Field } from 'vant'
+import { reactive } from 'vue'
 
-interface Message {
-  content: string
-  sender: string
-  time: string
-  isNewDay: boolean
-}
-
-
-const messages: Ref<Message[]> = ref([
+const messages = reactive([
   {
-    content: '你好啊',
+    content: '你好, 我是小助手, 有什么可以帮到你的吗?',
     sender: 'other',
     time: '2022-01-20 09:01:00',
-    isNewDay: false
-  },
-  {
-    content: '你好，很高兴见到你。',
-    sender: 'me',
-    time: '2022-01-20 09:02:00',
-    isNewDay: false
-  },
-  {
-    content: '最近怎么样？',
-    sender: 'other',
-    time: '2022-01-20 09:03:00',
     isNewDay: false
   }
 ])
 
-const newMessage: Ref<string> = ref('');
-const maxMessageLength: number = 100;
-const responseMessage: Ref<string> = ref('');
+let newMessage: Ref<string> = ref('')
 
 function onBackClick(): void {
   // 返回上一页代码...
 }
+let responseMessage: Ref<string> = ref('')
+
+  function reset(){
+    responseMessage = ref('');
+  }
 
 function sendMessage(): void {
   // 发送消息代码...
   if (newMessage.value.trim() === '') {
     return
   }
-  messages.value.push({
+
+  messages.push({
     content: newMessage.value,
     sender: 'me',
     time: new Date().toLocaleString(),
     isNewDay: false
   })
-  chatFun();
+
+  let res = reactive({
+    content: responseMessage,
+    sender: 'other',
+    time: new Date().toLocaleString(),
+    isNewDay: false
+  })
+
+  messages.push(res)
+  console.log(messages)
+
+  chatFun()
+  newMessage.value = '';
 }
 
 function onInputBlur(): void {
@@ -142,15 +102,9 @@ async function chatFun() {
   // isLoading.value = true
   await callOpenAi(newMessage.value).then((res) => {
     //@ts-ignore
-    const reader = res.body.getReader();
+    const reader = res.body.getReader()
     // console.log(reader);
-    readStream(reader);
-    messages.value.push({
-    content: responseMessage.value,
-    sender: 'other',
-    time: new Date().toLocaleString(),
-    isNewDay: false
-  })
+    readStream(reader)
   })
 }
 function readStream(reader: any) {
@@ -164,12 +118,14 @@ function readStream(reader: any) {
     decodedArray.forEach((decoded) => {
       if (decoded !== '') {
         if (decoded.trim() === '[DONE]') {
+          reset();
           return
         } else {
           const resString = JSON.parse(decoded).choices[0].delta.content
             ? JSON.parse(decoded).choices[0].delta.content
-            : ''
-            responseMessage.value += resString;
+            : '';
+          responseMessage.value += resString
+          console.log(responseMessage.value)
         }
       }
     })
@@ -206,6 +162,7 @@ function readStream(reader: any) {
 }
 
 .content {
+  min-height: 40px;
   padding: 10px;
   background-color: #fff;
   border-radius: 10px;
@@ -228,6 +185,14 @@ function readStream(reader: any) {
 }
 
 .send-btn {
+  /* flex: 1; */
+  width: 80px;
   padding: 10px;
+}
+.chat-bottom {
+  display: flex;
+}
+.chat-field {
+  flex: 1;
 }
 </style>
