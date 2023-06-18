@@ -10,8 +10,9 @@ import { RouterView } from 'vue-router'
 
 <style scoped>
 .wrapper {
-  width: 90vw;
-  height: 80vh;
+  width: 100%;
+  height: 820px;
+  overflow: hidden;
   background-color: rgb(224, 221, 221);
 }
 </style>

@@ -1,29 +1,23 @@
 <template>
   <div class="chat-window">
-    <nav-bar title="聊天窗口" left-text="返回" left-arrow @click-left="onBackClick" />
+    <!-- <nav-bar title="聊天窗口" left-text="返回" left-arrow @click-left="onBackClick" /> -->
     <div class="chat-container" ref="chatContainer">
       <div v-for="(msg, index) in messages" :key="index" class="message-wrapper">
         <notice-bar v-if="msg.isNewDay" :text="formatDate(msg.time)" />
-        <div
-          class="message-content"
-          :class="{ me: msg.sender === 'me', others: msg.sender !== 'me' }"
-        >
+        <div class="message-content" :style="{ flexDirection: msg.sender !== 'me' ? 'row' : 'row-reverse' }"
+          :class="{ me: msg.sender === 'me', others: msg.sender !== 'me' }">
           <div v-if="msg.sender !== 'me'" class="avatar"></div>
-          <div class="content">{{ msg.content }}</div>
-          <div class="time">{{ formatTime(msg.time) }}</div>
+          <div v-if="msg.sender == 'me'" class="user_acatar"></div>
+          <div class="content" :style="{ backgroundColor: msg.sender !== 'me' ? '#ffffff' : '#b7d9b7' }">{{ msg.content }}
+          </div>
+          <!-- <div class="time">{{ formatTime(msg.time) }}</div> -->
         </div>
       </div>
     </div>
     <div class="chat-bottom">
       <van-cell-group class="chat-field" inset>
-        <van-field
-          v-model="newMessage"
-          @blur="onInputBlur"
-          rows="1"
-          autosize
-          type="textarea"
-          placeholder="请输入留言"
-        />
+        <van-field autosize v-model="newMessage" @keyup.enter="sendMessage($event)" @blur="onInputBlur" rows="1"
+          type="textarea" placeholder="请输入留言" />
       </van-cell-group>
       <van-button type="success" class="send-btn" @click="sendMessage">发送</van-button>
     </div>
@@ -31,11 +25,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Ref } from 'vue'
+import { computed, type Ref } from 'vue'
 import { ref } from 'vue'
 import { callOpenAi } from '@/service/openAIService'
 import { NavBar, NoticeBar, Field } from 'vant'
-import { reactive } from 'vue'
+import { reactive } from 'vue';
+import { marked } from 'marked'
+import hljs from "highlight.js";
 
 const messages = reactive([
   {
@@ -45,19 +41,38 @@ const messages = reactive([
     isNewDay: false
   }
 ])
+marked.setOptions({
+  // 使用默认的渲染类
+  renderer: new marked.Renderer,
+  // GitHub Flavored Markdown, 生成 GitHub 格式。
+  gfm: true,
+  // 异步解析
+  async: true,
+  // 高亮函数，使用 highlight.js。本来还有第三个参数作为发生错误时的回调。
+  highlight(code: string, language: string): string {
+    return hljs.highlight(code, { language, ignoreIllegals: true }).value
+  },
+})
+
+async function markDownTrans(data) {
+  let res = await marked(data);
+  return res;
+}
 
 let newMessage: Ref<string> = ref('')
-
+let chatContainer = ref(null);
 function onBackClick(): void {
   // 返回上一页代码...
 }
 let responseMessage: Ref<string> = ref('')
 
-  function reset(){
-    responseMessage = ref('');
-  }
+function reset() {
+  responseMessage = ref('');
+}
 
-function sendMessage(): void {
+function sendMessage(e): void {
+
+  e.preventDefault()
   // 发送消息代码...
   if (newMessage.value.trim() === '') {
     return
@@ -76,10 +91,14 @@ function sendMessage(): void {
     time: new Date().toLocaleString(),
     isNewDay: false
   })
-
-  messages.push(res)
-  console.log(messages)
-
+  messages.push(res);
+  //@ts-ignore
+  console.log(chatContainer.value.scrollTop);
+  //@ts-ignore
+  setTimeout(() => {
+    //@ts-ignore
+    chatContainer.value.scrollTop = 999999999
+  }, 100)
   chatFun()
   newMessage.value = '';
 }
@@ -125,47 +144,55 @@ function readStream(reader: any) {
             ? JSON.parse(decoded).choices[0].delta.content
             : '';
           responseMessage.value += resString
-          console.log(responseMessage.value)
+          setTimeout(() => {
+            //@ts-ignore
+            chatContainer.value.scrollTop = 999999999
+          }, 100)
         }
       }
     })
-    console.log(decoded)
     return readStream(reader)
   })
 }
 </script>
 
 <style scoped>
-.chat-window {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background-color: #f7f9fa;
-}
+.chat-window {}
 
 .chat-container {
-  flex-grow: 1;
-  overflow-y: scroll;
-  padding: 10px;
+  background-color: gray;
+  height: 758px;
+  overflow: scroll;
 }
 
-.message-wrapper {
-  margin-bottom: 10px;
-}
+.message-wrapper {}
 
 .avatar {
+  flex: 0 0 40px;
   width: 40px;
   height: 40px;
-  background-color: #eee;
+  background-color: black;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.user_acatar {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  background-color: #b7d9b7;
   border-radius: 50%;
   margin-right: 10px;
 }
 
 .content {
+  flex: 0 0 280px;
   min-height: 40px;
   padding: 10px;
   background-color: #fff;
   border-radius: 10px;
+  margin-right: 10px;
+  margin-left: 10px;
 }
 
 .time {
@@ -176,23 +203,37 @@ function readStream(reader: any) {
 
 .me .message-content {
   display: flex;
-  flex-direction: row-reverse;
+
 }
 
 .others .message-content {
   display: flex;
-  flex-direction: row;
+
 }
 
 .send-btn {
   /* flex: 1; */
   width: 80px;
   padding: 10px;
+  margin-right: 10px;
 }
-.chat-bottom {
-  display: flex;
-}
+
 .chat-field {
   flex: 1;
 }
+
+.message-content {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.chat-bottom {
+  padding-top: 15px;
+  padding-bottom: 5px;
+  background-color: gray;
+  display: flex;
+}
+
+.message-wrapper :last-child {}
 </style>
